@@ -32,11 +32,13 @@ void logEvent(string importance, string message){
     }  
 }
 void back_to_menu(){
+    
     string answer;
     cout << "Вернуться в главное меню?" << endl;
     getline(cin, answer);
     try{
         if(answer == "Да" || answer == "да"){
+            system("clear");
             choice = 1;
             logEvent("INFO", "Открытие главного меню");
         }
@@ -196,6 +198,7 @@ void input_pilot(){
                     throw runtime_error("Принимаем только 'Да/Нет'");
                     back_to_menu();
                 }
+                system("clear");
                 break;
             }
         }
