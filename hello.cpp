@@ -14,6 +14,8 @@ using namespace std;
 int MAX_CHARACTERS_NAME = 20;
 string FORBIDEN_CHARACTERS = "!?,.%:;'&#@";
 int choice = 1;
+int input = 1;
+int back = 1;
 string folder_path = "/Users/egor/Documents/1 Project/Pilots";
 string file_path = "/Users/egor/Documents/1 Project/Pilots/pilots.txt";
 string temp_path = "/Users/egor/Documents/1 Project/Pilots/tempilots.txt";
@@ -32,27 +34,33 @@ void logEvent(string importance, string message){
     }  
 }
 void back_to_menu(){
-    
     string answer;
+    while(back == 1){
     cout << "Вернуться в главное меню?" << endl;
     getline(cin, answer);
     try{
         if(answer == "Да" || answer == "да"){
             system("clear");
-            choice = 1;
             logEvent("INFO", "Открытие главного меню");
+            choice = 1;
+            break;
         }
         else if(answer == "Нет" || answer == "нет"){
-            choice = 0;
             logEvent("INFO", "Завершение программы");
+            choice = 0;
+            break;
         }
         else{
+            system("clear");
             throw runtime_error("Принимаем только 'Да/Нет'");
-            
+            back = 0;
+            break;
         }
     }
     catch(const exception& e){
         cerr << "Ошибка! " << e.what() << endl; 
+        back = 1;
+    }
     }
 }
 void add_to_list(){
@@ -120,17 +128,19 @@ void remove_from_list(){
             rename("/Users/egor/Documents/1 Project/Pilots/tempilots.txt", "/Users/egor/Documents/1 Project/Pilots/pilots.txt");
 
             cout << "Успешно! Пилот с номером " << num_pilot << " был удален из реестра" << endl;
+            back_to_menu();
         }
     }
     catch(const exception& e){
         cerr << "Ошибка! " << e.what() << endl;
+        system("clear");
+        choice = 1;
     }
        
 }
     
-
-
 void list(){
+    
     add_to_list();
     for (int i = 0; i < pilots.size(); i++){
         cout << i+1 << ")" << pilots[i] << endl;
@@ -175,7 +185,7 @@ bool check_duplicates(const string& find_name){
 }
 void input_pilot(){
     string name; string answer;
-    while(true){
+    while(input == 1){
         cout << "Введите имя: " << endl;
         getline(cin, name);
         try{
@@ -188,23 +198,30 @@ void input_pilot(){
                 if(answer == "Да" || answer == "да"){
                     logEvent("INFO", "Новый процесс добавления пилота");
                     input_pilot();
-
+                    input = 1;
+                    break;
                 }
                 else if(answer == "Нет" || answer == "нет"){
+                    system("clear");
                     logEvent("INFO", "Возврат в главное меню");
+                    input = 0;
                     choice = 1;
+                    break;
                 }
                 else{
+                    system("clear");
                     throw runtime_error("Принимаем только 'Да/Нет'");
-                    back_to_menu();
+                    break;
+                    
                 }
-                system("clear");
-                break;
             }
         }
         catch(const exception& e){
             cerr << "Ошибка! " << e.what() << endl;
-
+            system("clear");
+            choice = 1;
+            break;
+            
         }
     }
 }
@@ -226,31 +243,35 @@ int main(){
             switch(point)
             {
             case 1:
+                system("clear");
                 logEvent("INFO", "Выведен список реестра пилотов");
                 list();
                 back_to_menu();
                 break;
             case 2:
+                input = 1;
                 input_pilot();
                 break;
             case 3:
                 remove_from_list();
-                back_to_menu();
                 break;
                 
             case 4:
                 logEvent("INFO", "Завершение программы");
                 choice = 0;
                 break;
-
             default:
-                logEvent("ERROR", "Обнаружение неизвестной ошибки!!!");
-                cerr << "Неизвестная ошибка!" << endl;
+                logEvent("ERROR", "Обнаружение ошибки неизветсного действия!!!");
+                system("clear");
+                cerr << "Ошибка! Неправильное действие!" << endl;   
         }
         
         }
         catch(...){
+            logEvent("ERROR", "Обнаружение ошибки неизветсного действия!!!");
+            system("clear");
             cerr << "Ошибка! Неправильное действие!" << endl;
+            
         }
         
     }
