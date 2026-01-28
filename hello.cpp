@@ -51,7 +51,6 @@ void back_to_menu(){
     }
     catch(const exception& e){
         cerr << "Ошибка! " << e.what() << endl; 
-        back_to_menu();
     }
 }
 void add_to_list(){
@@ -161,46 +160,58 @@ void writen(const string& name){
     file << name << endl;
     file.close();
 }
+
+bool check_duplicates(const string& find_name){
+    for (size_t i = 0; i < pilots.size(); i++){
+        if (find_name == pilots[i]){
+            throw runtime_error("Такое имя уже существует в реестре!");
+        }
+    }
+    
+    return true;
+    back_to_menu();
+}
 void input_pilot(){
     string name; string answer;
     while(true){
         cout << "Введите имя: " << endl;
         getline(cin, name);
         try{
-            if (validate(name)){
+            if (validate(name) && check_duplicates(name)){
                 writen(name);
                 logEvent("INFO", "Новый пилот добавлен в реестр.");
                 cout << "Система приветствует, " << name << ". Инициализация протокола 'СП ТХС'" << endl;
                 cout << "Добавляем еще нового пользователя?" << endl;
                 getline(cin, answer);
-                try{
-                    if(answer == "Да" || answer == "да"){
-                        logEvent("INFO", "Новый процесс добавления пилота");
-                        input_pilot();
-                    }
-                    else if(answer == "Нет" || answer == "нет"){
-                        logEvent("INFO", "Возврат в главное меню");
-                        choice = 1;
-                        
-                    }
+                if(answer == "Да" || answer == "да"){
+                    logEvent("INFO", "Новый процесс добавления пилота");
+                    input_pilot();
+
                 }
-                catch(const exception& e){
+                else if(answer == "Нет" || answer == "нет"){
+                    logEvent("INFO", "Возврат в главное меню");
+                    choice = 1;
+                }
+                else{
                     throw runtime_error("Принимаем только 'Да/Нет'");
-                    logEvent("ERROR", "Некорректный ответ пользователя!");
+                    back_to_menu();
                 }
                 break;
             }
         }
         catch(const exception& e){
             cerr << "Ошибка! " << e.what() << endl;
+
         }
     }
 }
 
 
 
+
 int main(){
 //Интерактив
+    add_to_list();
     while (choice == 1){
         int point;
         string str_point;
