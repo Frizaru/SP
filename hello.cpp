@@ -44,9 +44,14 @@ void back_to_menu(){
             choice = 0;
             logEvent("INFO", "Завершение программы");
         }
+        else{
+            throw runtime_error("Принимаем только 'Да/Нет'");
+            
+        }
     }
     catch(const exception& e){
-        throw runtime_error("Принимаем только 'Да/Нет'");
+        cerr << "Ошибка! " << e.what() << endl; 
+        back_to_menu();
     }
 }
 void add_to_list(){
@@ -62,6 +67,29 @@ void add_to_list(){
     }
 
 }
+bool validate_id(string& id){
+    int q = 0;
+    for (char c : id){
+        if (isdigit(c)){
+            q += 1;
+        }
+    }
+    if (q == id.length()){
+        if (stoi(id) > 0){
+            if (static_cast<size_t>(stoi(id)) > pilots.size()){
+                throw invalid_argument("Вы вышли за рамки допустимых значений!");
+            }
+        }
+        if (stoi(id) <= 0){
+            throw invalid_argument("Вы вышли за рамки допустимых значений!");
+        }
+    }
+    else{
+        throw invalid_argument("Некорректный ввод!");
+    }
+    return true;
+}
+
 void remove_from_list(){
     ifstream file(file_path);
     ofstream temp_file(temp_path, ios::app);
@@ -71,29 +99,35 @@ void remove_from_list(){
     string line;
     ifstream list_file(file_path);
     cout << "Напишите порядковый номер пилота, которого хотите уволить нахуй" << endl;
+    logEvent("INFO", "Введен ID пилота для удаления");
+    
+    getline(cin, num_pilot);
     try{
-        logEvent("INFO", "Введен ID пилота для удаления");
-        getline(cin, num_pilot);
-        delete_me = pilots[stoi(num_pilot)-1];
-        if (temp_file.is_open() && file.is_open()){
-            while(getline(file, line)){
-                if (line != delete_me){
-                    temp_file << line << endl;
+        if (validate_id(num_pilot)){
+            delete_me = pilots[stoi(num_pilot)-1];
+            if (temp_file.is_open() && file.is_open()){
+                while(getline(file, line)){
+                    if (line != delete_me){
+                        temp_file << line << endl;
+                    }
                 }
             }
-        }
-        temp_file.close(); file.close();
-        logEvent("INFO", "Удален текстовый файл 'pilots.txt'");
-        logEvent("INFO", "'tempilots.txt' заменен на pilots.txt'");
-        remove("/Users/egor/Documents/1 Project/Pilots/pilots.txt");
-        rename("/Users/egor/Documents/1 Project/Pilots/tempilots.txt", "/Users/egor/Documents/1 Project/Pilots/pilots.txt");
+            temp_file.close(); file.close();
+            logEvent("INFO", "Удален текстовый файл 'pilots.txt'");
+            logEvent("INFO", "'tempilots.txt' заменен на pilots.txt'");
+            remove("/Users/egor/Documents/1 Project/Pilots/pilots.txt");
+            rename("/Users/egor/Documents/1 Project/Pilots/tempilots.txt", "/Users/egor/Documents/1 Project/Pilots/pilots.txt");
 
-        cout << "Успешно! Пилот с номером " << num_pilot << " был удален из реестра" << endl;
+            cout << "Успешно! Пилот с номером " << num_pilot << " был удален из реестра" << endl;
+        }
     }
     catch(const exception& e){
-        cerr << "Ошибка!" << e.what() << endl;
+        cerr << "Ошибка! " << e.what() << endl;
     }
+       
 }
+    
+
 
 void list(){
     add_to_list();
@@ -172,7 +206,6 @@ int main(){
         string str_point;
         cout << "WELCOME TO TXC SYSTEM" << endl;
         cout << "1. Вывести список пилотов " << endl << "2. Добавить пилота " << endl << "3. Удалить пилота " << endl << "4.Выход " << endl;
-        
         try{ 
             getline(cin, str_point);
             point = stoi(str_point);
