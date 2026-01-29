@@ -6,7 +6,6 @@
 #include <filesystem>
 #include <ctime>
 #include <vector>
-#include <ncurses.h>
 #include <cstdio>
 
 namespace fs = std::filesystem;
@@ -14,8 +13,6 @@ using namespace std;
 int MAX_CHARACTERS_NAME = 20;
 string FORBIDEN_CHARACTERS = "!?,.%:;'&#@";
 int choice = 1;
-int input = 1;
-int back = 1;
 string folder_path = "/Users/egor/Documents/1 Project/Pilots";
 string file_path = "/Users/egor/Documents/1 Project/Pilots/pilots.txt";
 string temp_path = "/Users/egor/Documents/1 Project/Pilots/tempilots.txt";
@@ -35,32 +32,27 @@ void logEvent(string importance, string message){
 }
 void back_to_menu(){
     string answer;
-    while(back == 1){
-    cout << "Вернуться в главное меню?" << endl;
-    getline(cin, answer);
-    try{
-        if(answer == "Да" || answer == "да"){
-            system("clear");
-            logEvent("INFO", "Открытие главного меню");
-            choice = 1;
-            break;
+    while(true){
+        cout << "Вернуться в главное меню?" << endl;
+        getline(cin, answer);
+        try{
+            if(answer == "Да" || answer == "да"){
+                logEvent("INFO", "Открытие главного меню");
+                choice = 1;
+                return;
+            }
+            else if(answer == "Нет" || answer == "нет"){
+                logEvent("INFO", "Завершение программы");
+                return;
+            }
+            else{
+                throw runtime_error("Допускается только 'Да/Нет'");
+            }
         }
-        else if(answer == "Нет" || answer == "нет"){
-            logEvent("INFO", "Завершение программы");
-            choice = 0;
-            break;
+        catch(const exception& e){
+            cerr << "Ошибка! " << e.what() << endl; 
+            continue;
         }
-        else{
-            system("clear");
-            throw runtime_error("Принимаем только 'Да/Нет'");
-            back = 0;
-            break;
-        }
-    }
-    catch(const exception& e){
-        cerr << "Ошибка! " << e.what() << endl; 
-        back = 1;
-    }
     }
 }
 void add_to_list(){
@@ -100,6 +92,7 @@ bool validate_id(string& id){
 }
 
 void remove_from_list(){
+    string answer;
     ifstream file(file_path);
     ofstream temp_file(temp_path, ios::app);
     string num_pilot;
@@ -107,34 +100,53 @@ void remove_from_list(){
     int c = 1;
     string line;
     ifstream list_file(file_path);
-    cout << "Напишите порядковый номер пилота, которого хотите уволить нахуй" << endl;
-    logEvent("INFO", "Введен ID пилота для удаления");
-    
-    getline(cin, num_pilot);
-    try{
-        if (validate_id(num_pilot)){
-            delete_me = pilots[stoi(num_pilot)-1];
-            if (temp_file.is_open() && file.is_open()){
-                while(getline(file, line)){
-                    if (line != delete_me){
-                        temp_file << line << endl;
+    while(true){
+        cout << "Напишите порядковый номер пилота, которого хотите уволить нахуй" << endl;
+        logEvent("INFO", "Введен ID пилота для удаления");
+        getline(cin, num_pilot);
+        try{
+            if (validate_id(num_pilot)){
+                delete_me = pilots[stoi(num_pilot)-1];
+                if (temp_file.is_open() && file.is_open()){
+                    while(getline(file, line)){
+                        if (line != delete_me){
+                            temp_file << line << endl;
+                        }
+                    }
+                }
+                temp_file.close(); file.close();
+                logEvent("INFO", "Удален текстовый файл 'pilots.txt'");
+                logEvent("INFO", "'tempilots.txt' заменен на pilots.txt'");
+                remove("/Users/egor/Documents/1 Project/Pilots/pilots.txt");
+                rename("/Users/egor/Documents/1 Project/Pilots/tempilots.txt", "/Users/egor/Documents/1 Project/Pilots/pilots.txt");
+
+                cout << "Успешно! Пилот с номером " << num_pilot << " был удален из реестра" << endl;
+                cout << "Вернуться в главное меню?" << endl;
+                getline(cin, answer);
+                try{
+                    if(answer == "Да" || answer == "да"){
+                        logEvent("INFO", "Открытие главного меню");
+                        choice = 1;
+                        return;
+                    }
+                    else if(answer == "Нет" || answer == "нет"){
+                        logEvent("INFO", "Завершение программы");
+                        continue;
+                    }
+                    else{
+                        throw runtime_error("Допускается только 'Да/Нет'");
+                    }
+                    }
+                    catch(const exception& e){
+                        cerr << "Ошибка! " << e.what() << endl; 
+                        continue;
                     }
                 }
             }
-            temp_file.close(); file.close();
-            logEvent("INFO", "Удален текстовый файл 'pilots.txt'");
-            logEvent("INFO", "'tempilots.txt' заменен на pilots.txt'");
-            remove("/Users/egor/Documents/1 Project/Pilots/pilots.txt");
-            rename("/Users/egor/Documents/1 Project/Pilots/tempilots.txt", "/Users/egor/Documents/1 Project/Pilots/pilots.txt");
-
-            cout << "Успешно! Пилот с номером " << num_pilot << " был удален из реестра" << endl;
-            back_to_menu();
+        catch(const exception& e){
+            cerr << "Ошибка! " << e.what() << endl;
+            continue;
         }
-    }
-    catch(const exception& e){
-        cerr << "Ошибка! " << e.what() << endl;
-        system("clear");
-        choice = 1;
     }
        
 }
@@ -181,11 +193,11 @@ bool check_duplicates(const string& find_name){
     }
     
     return true;
-    back_to_menu();
 }
+
 void input_pilot(){
     string name; string answer;
-    while(input == 1){
+    while(true){
         cout << "Введите имя: " << endl;
         getline(cin, name);
         try{
@@ -193,37 +205,36 @@ void input_pilot(){
                 writen(name);
                 logEvent("INFO", "Новый пилот добавлен в реестр.");
                 cout << "Система приветствует, " << name << ". Инициализация протокола 'СП ТХС'" << endl;
-                cout << "Добавляем еще нового пользователя?" << endl;
-                getline(cin, answer);
-                if(answer == "Да" || answer == "да"){
-                    logEvent("INFO", "Новый процесс добавления пилота");
-                    input_pilot();
-                    input = 1;
-                    break;
+                while(true){
+                    try{
+                    cout << "Добавляем еще нового пользователя?" << endl;
+                    getline(cin, answer);
+                    if(answer == "Нет" || answer == "нет"){
+                        logEvent("INFO", "Возврат в главное меню");
+                        choice = 1;
+                        return;
+                    }
+                    else if(answer == "Да" || answer == "да"){
+                        break;
+                    }
+                    else{
+                        throw invalid_argument("Ты написал хуйню!");
+                    }
+                    }
+                    catch(const exception& e){
+                        cerr << "Ошибка! " << e.what() << endl;
+                        continue;
+                    }
                 }
-                else if(answer == "Нет" || answer == "нет"){
-                    system("clear");
-                    logEvent("INFO", "Возврат в главное меню");
-                    input = 0;
-                    choice = 1;
-                    break;
-                }
-                else{
-                    system("clear");
-                    throw runtime_error("Принимаем только 'Да/Нет'");
-                    break;
-                    
-                }
+                
             }
         }
         catch(const exception& e){
             cerr << "Ошибка! " << e.what() << endl;
-            system("clear");
-            choice = 1;
-            break;
             
         }
     }
+        
 }
 
 
@@ -243,13 +254,11 @@ int main(){
             switch(point)
             {
             case 1:
-                system("clear");
                 logEvent("INFO", "Выведен список реестра пилотов");
                 list();
                 back_to_menu();
                 break;
             case 2:
-                input = 1;
                 input_pilot();
                 break;
             case 3:
@@ -262,14 +271,12 @@ int main(){
                 break;
             default:
                 logEvent("ERROR", "Обнаружение ошибки неизветсного действия!!!");
-                system("clear");
                 cerr << "Ошибка! Неправильное действие!" << endl;   
         }
         
         }
         catch(...){
             logEvent("ERROR", "Обнаружение ошибки неизветсного действия!!!");
-            system("clear");
             cerr << "Ошибка! Неправильное действие!" << endl;
             
         }
