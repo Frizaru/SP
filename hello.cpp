@@ -30,6 +30,7 @@ void logEvent(string importance, string message){
         file.close();
     }  
 }
+
 void back_to_menu(){
     string answer;
     while(true){
@@ -39,6 +40,7 @@ void back_to_menu(){
             if(answer == "Да" || answer == "да"){
                 logEvent("INFO", "Открытие главного меню");
                 choice = 1;
+                system("clear");
                 return;
             }
             else if(answer == "Нет" || answer == "нет"){
@@ -50,6 +52,7 @@ void back_to_menu(){
             }
         }
         catch(const exception& e){
+            logEvent("ERROR", "Введен некорректный ответ!");
             cerr << "Ошибка! " << e.what() << endl; 
             continue;
         }
@@ -104,6 +107,11 @@ void remove_from_list(){
         cout << "Напишите порядковый номер пилота, которого хотите уволить нахуй" << endl;
         logEvent("INFO", "Введен ID пилота для удаления");
         getline(cin, num_pilot);
+        if (num_pilot == "MENU"){
+            choice = 1;
+            system("clear");
+            return;
+        }
         try{
             if (validate_id(num_pilot)){
                 delete_me = pilots[stoi(num_pilot)-1];
@@ -119,31 +127,36 @@ void remove_from_list(){
                 logEvent("INFO", "'tempilots.txt' заменен на pilots.txt'");
                 remove("/Users/egor/Documents/1 Project/Pilots/pilots.txt");
                 rename("/Users/egor/Documents/1 Project/Pilots/tempilots.txt", "/Users/egor/Documents/1 Project/Pilots/pilots.txt");
-
+                logEvent("INFO", "Пилот был успешно удален из реестра");
                 cout << "Успешно! Пилот с номером " << num_pilot << " был удален из реестра" << endl;
-                cout << "Вернуться в главное меню?" << endl;
-                getline(cin, answer);
-                try{
-                    if(answer == "Да" || answer == "да"){
-                        logEvent("INFO", "Открытие главного меню");
-                        choice = 1;
-                        return;
-                    }
-                    else if(answer == "Нет" || answer == "нет"){
-                        logEvent("INFO", "Завершение программы");
-                        continue;
-                    }
-                    else{
-                        throw runtime_error("Допускается только 'Да/Нет'");
-                    }
-                    }
-                    catch(const exception& e){
-                        cerr << "Ошибка! " << e.what() << endl; 
-                        continue;
+                while (true){
+                    cout << "Вернуться в главное меню?" << endl;
+                    getline(cin, answer);
+                    try{
+                        if(answer == "Да" || answer == "да"){
+                            logEvent("INFO", "Открытие главного меню");
+                            choice = 1;
+                            system("clear");
+                            return;
+                        }
+                        else if(answer == "Нет" || answer == "нет"){
+                            logEvent("INFO", "Завершение программы");
+                            break;
+                        }
+                        else{
+                            throw runtime_error("Допускается только 'Да/Нет'");
+                        }
+                        }
+                        catch(const exception& e){
+                            logEvent("ERROR", "Введен некоректный ответ!");
+                            cerr << "Ошибка! " << e.what() << endl; 
+                            continue;
+                        }
                     }
                 }
             }
         catch(const exception& e){
+            logEvent("ERROR", "Было введено некорректное значение в поле для ID удаляемого пилота!");
             cerr << "Ошибка! " << e.what() << endl;
             continue;
         }
@@ -152,7 +165,7 @@ void remove_from_list(){
 }
     
 void list(){
-    
+    logEvent("INFO", "Выведен список реестра пилотов");
     add_to_list();
     for (int i = 0; i < pilots.size(); i++){
         cout << i+1 << ")" << pilots[i] << endl;
@@ -197,9 +210,15 @@ bool check_duplicates(const string& find_name){
 
 void input_pilot(){
     string name; string answer;
+    
     while(true){
         cout << "Введите имя: " << endl;
         getline(cin, name);
+        if (name == "MENU"){
+            choice = 1;
+            system("clear");
+            return;
+        }
         try{
             if (validate(name) && check_duplicates(name)){
                 writen(name);
@@ -212,9 +231,11 @@ void input_pilot(){
                     if(answer == "Нет" || answer == "нет"){
                         logEvent("INFO", "Возврат в главное меню");
                         choice = 1;
+                        system("clear");
                         return;
                     }
                     else if(answer == "Да" || answer == "да"){
+                        system("clear");
                         break;
                     }
                     else{
@@ -222,6 +243,7 @@ void input_pilot(){
                     }
                     }
                     catch(const exception& e){
+                        logEvent("ERROR", "Введен некоректный ответ!");
                         cerr << "Ошибка! " << e.what() << endl;
                         continue;
                     }
@@ -230,6 +252,7 @@ void input_pilot(){
             }
         }
         catch(const exception& e){
+            logEvent("ERROR", "Имя пилота не прошло валидацию!");
             cerr << "Ошибка! " << e.what() << endl;
             
         }
@@ -254,7 +277,6 @@ int main(){
             switch(point)
             {
             case 1:
-                logEvent("INFO", "Выведен список реестра пилотов");
                 list();
                 back_to_menu();
                 break;
